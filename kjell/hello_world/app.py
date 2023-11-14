@@ -16,7 +16,10 @@ s3_client = boto3.client('s3', region_name='eu-west-1')
 rekognition_client = boto3.client('rekognition', region_name='eu-west-1')
 
 # Oppgave 1A
-BUCKET_NAME = "kjellsimagebucket"
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+
+if BUCKET_NAME is None:
+    BUCKET_NAME = "kand2035"
 
 def lambda_handler(event, context):
 
