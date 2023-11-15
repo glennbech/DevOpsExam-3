@@ -21,8 +21,8 @@ BUCKET_NAME = os.getenv("BUCKET_NAME")
 if BUCKET_NAME is None:
     BUCKET_NAME = "kand2035"
 
-def lambda_handler(event, context):
 
+def lambda_handler(event, context):
     # List all objects in the S3 bucket
     paginator = s3_client.get_paginator('list_objects_v2')
     rekognition_results = []  # Store the results
@@ -46,7 +46,8 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": 200,
-        "body":  json.dumps(rekognition_results),
+        "body": json.dumps(rekognition_results),
     }
+
 
 print(lambda_handler(None, None))
