@@ -1,0 +1,8 @@
+/.aws-sam/
+/kjell/.aws-sam/
+/target/
+/venv/
+/kjell/
+/.git/
+/.github/
+/.idea/
