@@ -1,8 +1,8 @@
-name: "Sam-AWS-Rekognition-BuildOnly"
+name: "Sam-AWS-Rekognition"
 
 on:
   push:
-    branches-ignore:
+    branches:
       - master
 
 jobs:
@@ -17,3 +17,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
       - run: sam build --use-container --config-file "samconfig.toml" --template-file "kjell/template.yaml"
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --config-file "samconfig.toml" --template-file "kjell/template.yaml"
