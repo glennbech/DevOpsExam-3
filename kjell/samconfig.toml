@@ -1,10 +1,9 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "sam-app-2035"
+stack_name = "kand2035SAM"
 resolve_s3 = true
-s3_prefix = "sam-app-2035"
+s3_prefix = "kand2035SAM"
 region = "eu-west-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-image_repositories = []
