@@ -2,3 +2,4 @@
 /kjell/.aws-sam/
 /target/
 /venv/
+.terraform/
