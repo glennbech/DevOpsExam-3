@@ -1,5 +1,4 @@
-/.aws-sam/
-/kjell/.aws-sam/
+.aws-sam/
 /target/
 /venv/
 .terraform/
