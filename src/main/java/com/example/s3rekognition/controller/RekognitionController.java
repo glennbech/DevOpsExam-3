@@ -9,10 +9,12 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.s3rekognition.PPEClassificationResponse;
 import com.example.s3rekognition.PPEResponse;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.instrument.Counter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +29,12 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
     private static final Logger logger = Logger.getLogger(RekognitionController.class.getName());
 
-    public RekognitionController() {
+    private MeterRegistry meterRegistry;
+
+    public RekognitionController(MeterRegistry meterRegistry) {
         this.s3Client = AmazonS3ClientBuilder.standard().build();
         this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
+        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -70,6 +75,9 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
 
             // If any person on an image lacks PPE on the face, it's a violation of regulations
             boolean violation = isViolation(result);
+            Counter.builder("isViolation").register(meterRegistry);
+            meterRegistry.counter("isViolation").increment();
+
 
             logger.info("scanning " + image.getKey() + ", violation result " + violation);
             // Categorize the current image as a violation or not.
