@@ -37,7 +37,7 @@ changes, but they were accounted for.
 - I also refactored the pre-existing "isViolation" method as I found a better, more readable way to calculate it.
 
 ### Task 4 Feedback notes:
-- The dashboard created for this task is in eu-north-1 and is named "kand2035"
+- The dashboard, alarm and metrics are stored in eu-north-1, dashboard is named "kand2035"
 - The endpoint I chose to add in this task is:
   - /check-ages?bucketName=<name_of_bucket_to_scan>
   - This function checks if any persons below the age of 18 has been scanned in the picture, if yes,
