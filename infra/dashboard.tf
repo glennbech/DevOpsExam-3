@@ -21,7 +21,7 @@ resource "aws_cloudwatch_dashboard" "main" {
             "region": "eu-north-1",
             "stat": "Maximum",
             "period": 60,
-            "title": "PPE Violations past hour"
+            "title": "PPE Violations over time"
           }
         },
         {

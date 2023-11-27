@@ -72,3 +72,11 @@ resource "aws_iam_role_policy_attachment" "attachment" {
   policy_arn = aws_iam_policy.policy.arn
 }
 
+module "cloudwatch_alarm" {
+  source                    = "../cloudwatchAlarmModule"
+  region                    = "eu-west-1"
+  alarm_name                = "ChildSpottedInFactory"
+  amount_children_threshold = 1
+  email_address             = var.EMAIL_FOR_ALARM
+}
+

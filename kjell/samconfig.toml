@@ -1,8 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "kand2035SAM"
-resolve_s3 = true
-s3_prefix = "kand2035SAM"
+stack_name = "kand2035stack"
+s3_bucket = "kand2035sam"
+s3_prefix = "kand2035prefix"
 region = "eu-west-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"

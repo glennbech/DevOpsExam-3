@@ -39,6 +39,7 @@ variable "AWS_REGION" {
   default = "eu-west-1"
 }
 
-variable "image" {
+variable "EMAIL_FOR_ALARM" {
   type = string
+  default = "sample-person@student.kristiania.no"
 }
