@@ -19,7 +19,7 @@
     - AWS_SECRET_ACCESS_KEY
   - The variables are:
     - BUCKET_NAME (This will default to "kand2035" if not set, only the sam python app is using this)
-    - TF_VAR_email_for_alarm (sets the email the alarm in task4 will alert to, otherwise it defaults
+    - TF_VAR_EMAIL_FOR_ALARM (sets the email the alarm in task4 will alert to, otherwise it defaults
     to example email)
 
 ### Task 1 notes:
