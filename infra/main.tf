@@ -73,10 +73,10 @@ resource "aws_iam_role_policy_attachment" "attachment" {
 }
 
 module "cloudwatch_alarm" {
-  source                     = "../cloudwatchAlarmModule"
-  region                   = "eu-west-1"
-  alarm_name               = "ChildSpottedInFactory"
-  amnt_children_threshhold = 1
-  email_address            = "sample-person@student.kristiania.no"
+  source                    = "../cloudwatchAlarmModule"
+  region                    = "eu-west-1"
+  alarm_name                = "ChildSpottedInFactory"
+  amount_children_threshold = 1
+  email_address             = var.EMAIL_FOR_ALARM
 }
 

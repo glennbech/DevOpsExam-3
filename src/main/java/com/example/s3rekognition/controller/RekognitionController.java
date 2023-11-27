@@ -179,7 +179,7 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
                 .register(meterRegistry);
 
         this.underageViolationCounter =  Counter.builder("2035.isUnderage")
-                .description("If anyone in a picture does not have proper PPE")
+                .description("If anyone in a picture is underage")
                 .register(meterRegistry);
 
         this.imageSizeSummary = DistributionSummary.builder("2035.pictureSizes")

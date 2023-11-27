@@ -38,3 +38,8 @@ variable "AWS_REGION" {
   type = string
   default = "eu-west-1"
 }
+
+variable "EMAIL_FOR_ALARM" {
+  type = string
+  default = "sample-person@student.kristiania.no"
+}

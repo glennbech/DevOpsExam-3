@@ -20,7 +20,7 @@ resource "aws_cloudwatch_metric_alarm" "custom_metric_alarm" {
   namespace           = "kand2035"
   period              = "60"
   statistic           = "Maximum"
-  threshold           = var.amnt_children_threshhold
+  threshold           = var.amount_children_threshold
   alarm_description   = "This metric monitors if any children has been scanned the factory"
   alarm_actions       = [aws_sns_topic.alarm_topic.arn]
 }

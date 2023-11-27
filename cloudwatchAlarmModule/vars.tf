@@ -7,7 +7,7 @@ variable "region" {
 variable "alarm_name" {
   description = "Name of the alarm"
   type        = string
-  default = "ChildInFactory"
+  default     = "ChildInFactory"
 }
 
 variable "email_address" {
@@ -15,7 +15,7 @@ variable "email_address" {
   type        = string
 }
 
-variable "amnt_children_threshhold" {
+variable "amount_children_threshold" {
   description = "The amount of children before alarm sounds"
   type        = number
 }
