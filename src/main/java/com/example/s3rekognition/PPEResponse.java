@@ -12,9 +12,6 @@ public class PPEResponse implements Serializable {
     String bucketName;
     List<PPEClassificationResponse> results;
 
-    public PPEResponse() {
-    }
-
     public PPEResponse(String bucketName, List<PPEClassificationResponse> results) {
         this.bucketName = bucketName;
         this.results = results;

@@ -1,18 +1,22 @@
 package com.example.s3rekognition.controller;
 
-import com.amazonaws.services.rekognition.AmazonRekognition;
-import com.amazonaws.services.rekognition.AmazonRekognitionClientBuilder;
-import com.amazonaws.services.rekognition.model.*;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.s3rekognition.AgeResponse;
+import io.micrometer.core.instrument.DistributionSummary;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.rekognition.RekognitionClient;
+import software.amazon.awssdk.services.rekognition.model.*;
+import software.amazon.awssdk.services.s3.S3Client;
+
+import software.amazon.awssdk.services.s3.model.*;
 import com.example.s3rekognition.PPEClassificationResponse;
 import com.example.s3rekognition.PPEResponse;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.instrument.Counter;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +26,20 @@ import java.util.logging.Logger;
 @RestController
 public class RekognitionController implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final AmazonS3 s3Client;
-    private final AmazonRekognition rekognitionClient;
+    private final S3Client s3Client;
+    private final RekognitionClient rekognitionClient;
 
     private static final Logger logger = Logger.getLogger(RekognitionController.class.getName());
 
-    public RekognitionController() {
-        this.s3Client = AmazonS3ClientBuilder.standard().build();
-        this.rekognitionClient = AmazonRekognitionClientBuilder.standard().build();
+    private MeterRegistry meterRegistry;
+    private DistributionSummary imageSizeSummary;
+    private Counter ppeViolationCounter;
+    private Counter underageViolationCounter;
+
+    public RekognitionController(MeterRegistry meterRegistry) {
+        this.s3Client = S3Client.builder().region(Region.EU_WEST_1).build();
+        this.rekognitionClient = RekognitionClient.builder().region(Region.EU_WEST_1).build();
+        this.meterRegistry = meterRegistry;
     }
 
     /**
@@ -44,41 +54,108 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
     @ResponseBody
     public ResponseEntity<PPEResponse> scanForPPE(@RequestParam String bucketName) {
         // List all objects in the S3 bucket
-        ListObjectsV2Result imageList = s3Client.listObjectsV2(bucketName);
+        ListObjectsV2Response imageList = s3Client.listObjectsV2(ListObjectsV2Request.builder().bucket(bucketName).build());
 
         // This will hold all of our classifications
         List<PPEClassificationResponse> classificationResponses = new ArrayList<>();
 
-        // This is all the images in the bucket
-        List<S3ObjectSummary> images = imageList.getObjectSummaries();
+        for (S3Object image : imageList.contents()) {
+            // Sends the image size to AWS with Micrometer
+            imageSizeSummary.record(image.size());
 
-        // Iterate over each object and scan for PPE
-        for (S3ObjectSummary image : images) {
-            logger.info("scanning " + image.getKey());
+            // Process each S3Object
+            logger.info("scanning " + image.key());
+            Image currentImage = Image.builder()
+                    .s3Object(software.amazon.awssdk.services.rekognition.model.S3Object.builder()
+                            .bucket(bucketName)
+                            .name(image.key())
+                            .build())
+                    .build();
 
-            // This is where the magic happens, use AWS rekognition to detect PPE
-            DetectProtectiveEquipmentRequest request = new DetectProtectiveEquipmentRequest()
-                    .withImage(new Image()
-                            .withS3Object(new S3Object()
-                                    .withBucket(bucketName)
-                                    .withName(image.getKey())))
-                    .withSummarizationAttributes(new ProtectiveEquipmentSummarizationAttributes()
-                            .withMinConfidence(80f)
-                            .withRequiredEquipmentTypes("FACE_COVER"));
+            DetectProtectiveEquipmentRequest request = DetectProtectiveEquipmentRequest.builder()
+                    .image(currentImage)
+                    .summarizationAttributes(ProtectiveEquipmentSummarizationAttributes.builder()
+                            .minConfidence(80f)
+                            .requiredEquipmentTypesWithStrings("FACE_COVER")
+                            .build())
+                    .build();
 
-            DetectProtectiveEquipmentResult result = rekognitionClient.detectProtectiveEquipment(request);
+            DetectProtectiveEquipmentResponse result = rekognitionClient.detectProtectiveEquipment(request);
 
             // If any person on an image lacks PPE on the face, it's a violation of regulations
             boolean violation = isViolation(result);
 
-            logger.info("scanning " + image.getKey() + ", violation result " + violation);
+            if (violation) {
+                meterRegistry.counter("2035.isViolation").increment();
+            }
+
+
+            logger.info("scanning " + image.key() + ", violation result " + violation);
             // Categorize the current image as a violation or not.
-            int personCount = result.getPersons().size();
-            PPEClassificationResponse classification = new PPEClassificationResponse(image.getKey(), personCount, violation);
+            int personCount = result.persons().size();
+            PPEClassificationResponse classification = new PPEClassificationResponse(image.key(), personCount, violation);
             classificationResponses.add(classification);
         }
+
         PPEResponse ppeResponse = new PPEResponse(bucketName, classificationResponses);
         return ResponseEntity.ok(ppeResponse);
+    }
+
+    /**
+     * This endpoint takes an S3 bucket name in as an argument, scans all the
+     * Files in the bucket for the age of each person in the image. Reports if any person underage is scanned.
+     * <p>
+     *
+     * @param bucketName
+     * @return
+     */
+    @GetMapping(value = "/check-ages", consumes = "*/*", produces = "application/json")
+    @ResponseBody
+    public List<AgeResponse> checkAges(@RequestParam String bucketName) {
+
+        // List all objects in the S3 bucket
+        ListObjectsV2Response imageList = s3Client.listObjectsV2(ListObjectsV2Request.builder().bucket(bucketName).build());
+
+        List<AgeResponse> ageResponses = new ArrayList<>();
+
+        for (S3Object image : imageList.contents()) {
+            logger.info("scanning " + image.key());
+
+            Image currentImage = Image.builder()
+                    .s3Object(software.amazon.awssdk.services.rekognition.model.S3Object.builder()
+                            .bucket(bucketName)
+                            .name(image.key())
+                            .build())
+                    .build();
+
+            // Sends the image size to AWS with Micrometer
+            imageSizeSummary.record(image.size());
+
+            logger.info("Size: " + Long.toString(image.size()));
+
+            DetectFacesRequest request = DetectFacesRequest.builder()
+                    .image(currentImage)
+                    .attributes(Attribute.AGE_RANGE)
+                    .build();
+
+            DetectFacesResponse response = rekognitionClient.detectFaces(request);
+
+
+            long amntUnderage = response.faceDetails().stream()
+                    .filter(face -> face.ageRange().low() < 18)
+                    .count();
+
+            if (amntUnderage > 0) {
+                underageViolationCounter.increment((double)amntUnderage);
+            }
+
+            logger.info("Total: " + Integer.toString(response.faceDetails().size()) +
+                    ", Amount less than 18: " + Long.toString(amntUnderage));
+
+            ageResponses.add(new AgeResponse(image.key(), response.faceDetails().size(), amntUnderage));
+        }
+
+        return ageResponses;
     }
 
     /**
@@ -90,16 +167,23 @@ public class RekognitionController implements ApplicationListener<ApplicationRea
      * @param result
      * @return
      */
-    private static boolean isViolation(DetectProtectiveEquipmentResult result) {
-        return result.getPersons().stream()
-                .flatMap(p -> p.getBodyParts().stream())
-                .anyMatch(bodyPart -> bodyPart.getName().equals("FACE")
-                        && bodyPart.getEquipmentDetections().isEmpty());
-    }
 
+    private static boolean isViolation(DetectProtectiveEquipmentResponse result) {
+        return result.summary().personsWithoutRequiredEquipment().size() > 0;
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+        this.ppeViolationCounter =  Counter.builder("2035.isViolation")
+                .description("If anyone in a picture does not have proper PPE")
+                .register(meterRegistry);
 
+        this.underageViolationCounter =  Counter.builder("2035.isUnderage")
+                .description("If anyone in a picture does not have proper PPE")
+                .register(meterRegistry);
+
+        this.imageSizeSummary = DistributionSummary.builder("2035.pictureSizes")
+                .description("Size of images processed")
+                .register(meterRegistry);
     }
 }
