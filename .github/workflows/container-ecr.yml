@@ -41,8 +41,6 @@ jobs:
        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
        AWS_REGION: eu-west-1
-       IMAGE: 244530008913.dkr.ecr.eu-west-1.amazonaws.com/kand2035:latest
-  #    TF_LOG: trace
      steps:
        - uses: actions/checkout@v3
        - name: Setup Terraform
@@ -54,7 +52,7 @@ jobs:
 
        - name: Terraform Plan
          id: plan
-         run: terraform plan -var="image=$IMAGE" -no-color
+         run: terraform plan -no-color
          continue-on-error: true
 
        - name: Terraform Plan Status
@@ -63,4 +61,4 @@ jobs:
 
        - name: Terraform Apply
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-         run: terraform apply -var="image=244530008913.dkr.ecr.eu-west-1.amazonaws.com/kand2035:latest" -auto-approve
+         run: terraform apply -auto-approve
