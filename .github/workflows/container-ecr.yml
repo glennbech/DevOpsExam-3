@@ -66,7 +66,9 @@ jobs:
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           echo "::set-output name=apprunner_service_url::$(terraform output -raw apprunner_service_url)"
+           APPRUNNER_URL=$(terraform output -raw apprunner_service_url)
+           echo "APPRUNNER_URL=$APPRUNNER_URL" >> $GITHUB_ENV
+           echo "::set-output name=apprunner_url::$APPRUNNER_URL"
            echo "::set-output name=rev_tag::$(git rev-parse --short HEAD)"
 
        - name: Create release
