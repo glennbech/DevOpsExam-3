@@ -43,6 +43,7 @@ jobs:
        AWS_REGION: eu-west-1
        TF_VAR_EMAIL_FOR_ALARM: ${{ vars.TF_VAR_EMAIL_FOR_ALARM }}
        APPRUNNER_SERVICE_URL:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
      steps:
        - uses: actions/checkout@v3
        - name: Setup Terraform
