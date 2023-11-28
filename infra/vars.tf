@@ -43,3 +43,7 @@ variable "EMAIL_FOR_ALARM" {
   type = string
   default = "sample-person@student.kristiania.no"
 }
+
+output "apprunner_service_url" {
+  value = aws_apprunner_service.service.service_url
+}

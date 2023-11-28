@@ -42,6 +42,7 @@ jobs:
        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
        AWS_REGION: eu-west-1
        TF_VAR_EMAIL_FOR_ALARM: ${{ vars.TF_VAR_EMAIL_FOR_ALARM }}
+       APPRUNNER_SERVICE_URL:
      steps:
        - uses: actions/checkout@v3
        - name: Setup Terraform
@@ -62,4 +63,12 @@ jobs:
 
        - name: Terraform Apply
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-         run: terraform apply -auto-approve
+         run: |
+           terraform apply -auto-approve
+           export APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)
+
+       - uses: rymndhng/release-on-push-action@main
+         with:
+           bump_version_scheme: minor
+           use_github_release_notes: true
+           release_body: "Public url: $APPRUNNER_SERVICE_URL"

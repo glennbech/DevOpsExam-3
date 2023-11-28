@@ -4,3 +4,4 @@
 .terraform/
 mvnw
 mvnw.cmd
+/.mvn/
