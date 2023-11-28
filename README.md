@@ -22,6 +22,8 @@
     - TF_VAR_EMAIL_FOR_ALARM (sets the email the alarm in task4 will alert to, otherwise it defaults
     to example email)
     - TF_VAR_DASHBOARD_NAME (Defaults to "kand2035", but can be set if you want another name)
+  - For an automatic release to be made after push to main, in your forked repository,
+go to Settings -> Actions -> General -> At the bottom enable "Read and write permissions" -> Save.
     
 -- --
 
