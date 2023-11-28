@@ -78,6 +78,6 @@ jobs:
          with:
            tag_name: ${{ steps.terra_apply.outputs.rev_tag }}
            release_name: Release ${{ github.ref }}
-           body: Public AppRunner url ${{ env.$APPRUNNER_URL  }}
+           body: Public AppRunner url ${{ env.APPRUNNER_URL  }}
            draft: false
            prerelease: false
