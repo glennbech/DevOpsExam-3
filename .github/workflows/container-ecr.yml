@@ -67,7 +67,7 @@ jobs:
          run: |
            terraform apply -auto-approve
            APPRUNNER_URL=$(terraform output -raw apprunner_service_url)
-           echo "APPRUNNER_URL=$APPRUNNER_URL" >> $GITHUB_ENV
+           echo "apprunner_url=$APPRUNNER_URL" >> $GITHUB_OUTPUT
            echo "::set-output name=rev_tag::$(git rev-parse --short HEAD)"
 
        - name: Create release
@@ -78,6 +78,6 @@ jobs:
          with:
            tag_name: ${{ steps.terra_apply.outputs.rev_tag }}
            release_name: Release ${{ github.ref }}
-           body: Public AppRunner url ${{ env.APPRUNNER_URL  }}
+           body: Public AppRunner url ${{ steps.terra_apply.outputs.apprunner_url  }}
            draft: false
            prerelease: false
