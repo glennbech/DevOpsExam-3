@@ -43,8 +43,6 @@ jobs:
        AWS_REGION: eu-west-1
        TF_VAR_EMAIL_FOR_ALARM: ${{ vars.TF_VAR_EMAIL_FOR_ALARM }}
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     outputs:
-       AR_URL: ${{ steps.step1.outputs.AR_URL }}
      steps:
        - uses: actions/checkout@v3
        - name: Setup Terraform
@@ -68,4 +66,16 @@ jobs:
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           export APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)
+           echo "::set-output name=apprunner_service_url::$(terraform output -raw apprunner_service_url)"
+
+       - name: Create release
+         id: create_release
+         uses: actions/create-release@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+         with:
+           tag_name: ${{ github.ref }}
+           release_name: Release ${{ github.ref }}
+           body: Public AppRunner url ${{ steps.terra_apply.outputs.apprunner_service_url }}
+           draft: false
+           prerelease: false

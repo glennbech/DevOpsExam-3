@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_dashboard" "main" {
-  dashboard_name = "kand2035"
+  dashboard_name = var.DASHBOARD_NAME
   dashboard_body = jsonencode(
     {
       "widgets": [

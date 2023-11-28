@@ -44,6 +44,11 @@ variable "EMAIL_FOR_ALARM" {
   default = "sample-person@student.kristiania.no"
 }
 
+variable "DASHBOARD_NAME" {
+  type = string
+  default = "kand2035"
+}
+
 output "apprunner_service_url" {
   value = aws_apprunner_service.service.service_url
 }

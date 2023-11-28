@@ -21,6 +21,9 @@
     - BUCKET_NAME (This will default to "kand2035" if not set, only the sam python app is using this)
     - TF_VAR_EMAIL_FOR_ALARM (sets the email the alarm in task4 will alert to, otherwise it defaults
     to example email)
+    - TF_VAR_DASHBOARD_NAME (Defaults to "kand2035", but can be set if you want another name)
+    
+-- --
 
 ### Task 1 notes:
 - The SAM output will be placed in a bucket named "kand2035sam"
