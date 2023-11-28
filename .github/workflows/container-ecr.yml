@@ -68,8 +68,21 @@ jobs:
            terraform apply -auto-approve
            export APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)
 
-       - uses: rymndhng/release-on-push-action@master
+       - name: Create release
+         id: create_release
+         uses: actions/create-release@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
          with:
-           bump_version_scheme: minor
-           use_github_release_notes: true
-           release_body: "Public url: $APPRUNNER_SERVICE_URL"
+           tag_name: ${{ github.ref }}
+           release_name: Release ${{ github.ref }}
+           body: Public AppRunner url ${{ env.APPRUNNER_SERVICE_URL }}
+           draft: true
+           prerelease: false
+
+       - name: Publish release
+         uses: StuYarrow/publish-release@v1.1.2
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         with:
+           id: ${{ steps.create_release.outputs.id }}
