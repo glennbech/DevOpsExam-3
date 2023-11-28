@@ -42,7 +42,6 @@ jobs:
        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
        AWS_REGION: eu-west-1
        TF_VAR_EMAIL_FOR_ALARM: ${{ vars.TF_VAR_EMAIL_FOR_ALARM }}
-       APPRUNNER_SERVICE_URL:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
      steps:
        - uses: actions/checkout@v3
@@ -63,10 +62,13 @@ jobs:
          run: exit 1
 
        - name: Terraform Apply
+         id: terra_apply
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           export APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)
+           echo "APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)" >> $GITHUB_ENV
+           echo "APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)" >> $GITHUB_OUTPUT
+     
 
        - name: Create release
          id: create_release
@@ -76,13 +78,6 @@ jobs:
          with:
            tag_name: ${{ github.ref }}
            release_name: Release ${{ github.ref }}
-           body: Public AppRunner url ${{ env.APPRUNNER_SERVICE_URL }}
-           draft: true
+           body: Public AppRunner url ${{ steps.terra_apply.outputs.APPRUNNER_SERVICE_URL }}
+           draft: false
            prerelease: false
-
-       - name: Publish release
-         uses: StuYarrow/publish-release@v1.1.2
-         env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         with:
-           id: ${{ steps.create_release.outputs.id }}
