@@ -66,10 +66,12 @@ jobs:
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           APPRUNNER_URL=$(terraform output -raw apprunner_service_url | tr '\n' ' ')
-           echo "$APPRUNNER_URL"
-           printf "apprunner_url=%s" "$APPRUNNER_URL" >> $GITHUB_OUTPUT
+
+       - name: variable creation
+         id: variable_creation
+         run: |
            echo "::set-output name=rev_tag::$(git rev-parse --short HEAD)"
+           echo "::set-output name=apprunner_url::$(terraform output -raw apprunner_service_url)"
 
        - name: Create release
          id: create_release
@@ -77,8 +79,8 @@ jobs:
          env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
          with:
-           tag_name: ${{ steps.terra_apply.outputs.rev_tag }}
+           tag_name: ${{ steps.variable_creation.outputs.rev_tag }}
            release_name: Release ${{ github.ref }}
-           body: Public AppRunner url ${{ steps.terra_apply.outputs.apprunner_url  }}
+           body: Public AppRunner url ${{ steps.variable_creation.outputs.apprunner_url  }}
            draft: false
            prerelease: false
