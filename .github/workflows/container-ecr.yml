@@ -43,6 +43,8 @@ jobs:
        AWS_REGION: eu-west-1
        TF_VAR_EMAIL_FOR_ALARM: ${{ vars.TF_VAR_EMAIL_FOR_ALARM }}
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     outputs:
+       AR_URL: ${{ steps.step1.outputs.AR_URL }}
      steps:
        - uses: actions/checkout@v3
        - name: Setup Terraform
@@ -66,8 +68,8 @@ jobs:
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           echo "::set-output name=APPRUNNER_SERVICE_URL::$(terraform output -raw apprunner_service_url)"
-     
+           export APPRUNNER_SERVICE_URL=$(terraform output apprunner_service_url)
+           echo "AR_URL=$APPRUNNER_SERVICE_URL" >> $GITHUB_OUTPUT
 
        - name: Create release
          id: create_release
@@ -77,6 +79,6 @@ jobs:
          with:
            tag_name: ${{ github.ref }}
            release_name: Release ${{ github.ref }}
-           body: Public AppRunner url ${{ steps.terra_apply.outputs.APPRUNNER_SERVICE_URL }}
+           body: Public AppRunner url ${{ steps.terra_apply.outputs.AR_URL }}
            draft: false
            prerelease: false
