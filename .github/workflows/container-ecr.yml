@@ -66,7 +66,7 @@ jobs:
          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
          run: |
            terraform apply -auto-approve
-           APPRUNNER_URL=$(terraform output -raw apprunner_service_url)
+           APPRUNNER_URL=$(terraform output -raw apprunner_service_url | tr '\n' ' ')
            echo "$APPRUNNER_URL"
            printf "apprunner_url=%s" "$APPRUNNER_URL" >> $GITHUB_OUTPUT
            echo "::set-output name=rev_tag::$(git rev-parse --short HEAD)"
