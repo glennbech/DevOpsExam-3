@@ -11,7 +11,7 @@ terraform {
   }
   backend "s3" {
     bucket = "pgr301-2021-terraform-state"
-    key    = "kand2035/apprunner-actions.state"
+    key    = "kand2035/apprunner-actions-s.state"
     region = "eu-north-1"
   }
 }

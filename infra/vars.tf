@@ -1,13 +1,13 @@
 variable "service_name" {
   description = "Name of the Terraform service"
   type = string
-  default = "kand2035"
+  default = "kand2035s"
 }
 
 variable "iam_role_name" {
   description = "IAM Role name"
   type = string
-  default = "kand2035-iam-role"
+  default = "kand2035-iam-roles"
 }
 
 variable "image_identifier" {
@@ -19,7 +19,7 @@ variable "image_identifier" {
 variable "iam_policy_name" {
   description = "IAM Policy name"
   type = string
-  default = "kand2035-iam-policy"
+  default = "kand2035-iam-policys"
 }
 
 variable "cpu_units" {
@@ -46,7 +46,7 @@ variable "EMAIL_FOR_ALARM" {
 
 variable "DASHBOARD_NAME" {
   type = string
-  default = "kand2035"
+  default = "kand2035s"
 }
 
 output "apprunner_service_url" {
